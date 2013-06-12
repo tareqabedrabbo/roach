@@ -20,7 +20,7 @@ type record struct {
 
 func NewRecord(key string, value []byte) *record {
 	now := time.Now().Unix()
-	r := &Record{created: now, updated: now, key: key}
+	r := &record{created: now, updated: now, key: key}
 	r.value.Write(value)
 	return r
 }
@@ -32,19 +32,19 @@ func (r *record) Update(newValue []byte) {
 	r.updated = now
 }
 
-func (r *record) created() int64 {
+func (r *record) Created() int64 {
 	return r.created
 }
 
-func (r *record) updated() int64 {
+func (r *record) Updated() int64 {
 	return r.updated
 }
 
-func (r *record) key() string {
+func (r *record) Key() string {
 	return r.key
 }
 
-func (r *record) value() []byte {
+func (r *record) Value() []byte {
 	return r.value.Bytes()
 }
 

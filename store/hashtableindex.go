@@ -8,7 +8,6 @@ import(
 
 const bucketsSize uint32 = 100000
 
-
 type HashIndex struct {
 	buckets [bucketsSize]list.List
 }
@@ -17,11 +16,11 @@ func NewHashIndex() *HashIndex {
 	return new(HashIndex)
 }
 
-func (index *HashIndex) Get(key string) *Record {
-	return new(Record)
+func (index *HashIndex) Get(key string) *record {
+	return new(record)
 }
 
-func (index *HashIndex) Set(key string, value []byte) *Record {
+func (index *HashIndex) Set(key string, value []byte) *record {
 	h := hash(key)
 	log.Printf("hash = %d\n", hash)
 	l := index.buckets[h]
@@ -32,8 +31,8 @@ func (index *HashIndex) Set(key string, value []byte) *Record {
 	return  r
 }
 
-func (index *HashIndex) Delete(key string) *Record {
-	return new(Record)
+func (index *HashIndex) Delete(key string) *record {
+	return new(record)
 }
 
 func hash(key string) uint32 {
