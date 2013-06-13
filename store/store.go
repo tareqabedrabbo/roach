@@ -8,7 +8,7 @@ import (
 type Index interface {
 	Get(key string) *record
 	Set(key string, value []byte) *record
-	Delete(key string) *record
+	Delete(key string) (*record, error)
 }
 
 type record struct {

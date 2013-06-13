@@ -4,6 +4,7 @@ import(
 	"hash/fnv"
 	"container/list"
 	"log"
+	"fmt"
 )
 
 const bucketsSize uint32 = 100000
@@ -45,8 +46,24 @@ func (index *HashIndex) Set(key string, value []byte) *record {
 	return  r
 }
 
-func (index *HashIndex) Delete(key string) *record {
-	return new(record)
+func (index *HashIndex) Delete(key string) (*record, error) {
+	var (
+		h = hash(key)
+		bucket = index.buckets[h]
+	)
+	
+	if bucket == nil {
+		return nil, fmt.Errorf("key [%s] does not exist", key)
+	}
+
+	e := bucket.Front()
+	for ; e != nil; e = e.Next() {
+		if r := e.Value.(*record); r.Key() == key {
+			return bucket.Remove(e).(*record), nil
+		}
+	}
+
+	return nil, fmt.Errorf("key [%s] does not exist", key)		
 }
 
 func hash(key string) uint32 {

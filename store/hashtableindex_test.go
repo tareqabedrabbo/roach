@@ -36,9 +36,19 @@ func TestGet(t *testing.T) {
 		r = index.Set(key, value)
 	)
 
-	log.Printf("==>%+v\n", r)
-
 	if r2 := index.Get(key); r2 != r {
 		t.Errorf("Expected %s. Found %v\n", r.Key(), r2)
 	}
+}
+
+func TestDeleteExisiting(t *testing.T) {
+	var index, key, value = initData()
+	index.Set(key, value)
+	if r, _ := index.Delete(key); r == nil || r.Key() != key {
+		t.Errorf("Error in deleting key [%s]\n", key)
+	}
+}
+
+func initData() (index Index, key string, value []byte) {
+	return &HashIndex{}, "mykey", make([]byte, 10)
 }
