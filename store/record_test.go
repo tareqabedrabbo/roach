@@ -28,3 +28,22 @@ func TestCreateRecord(t *testing.T) {
 		t.Errorf("Expected value [%v]. Found value [%v]", value, actualValue)
 	}
 }
+
+func TestUpdateRecord(t *testing.T) {
+	var (
+			key = "mykey"
+			initialLength = 10
+			updatedLength = 5
+			r = NewRecord(key, make([]byte, initialLength))
+		)
+
+	if l := len(r.Value()); l != initialLength {
+		t.Errorf("Expected [%d]. Found [%d]\n", initialLength, l)
+	}
+
+	r.Update(make([]byte, updatedLength))
+
+	if l := len(r.Value()); l != updatedLength {
+		t.Errorf("Expected [%d]. Found [%d]\n", updatedLength, l)
+	}
+}
