@@ -9,21 +9,35 @@ import(
 const bucketsSize uint32 = 100000
 
 type HashIndex struct {
-	buckets [bucketsSize]list.List
+	buckets [bucketsSize]*list.List
 }
 
 func NewHashIndex() *HashIndex {
-	return new(HashIndex)
+	return &HashIndex{}
 }
 
 func (index *HashIndex) Get(key string) *record {
-	return new(record)
+	var (
+		h = hash(key)
+		bucket = index.buckets[h]
+	)
+	log.Printf("hash for key %s = %d . Bucket's length = %d\n", key, h, bucket.Len())
+	for e := bucket.Front(); e != nil; e = e.Next() {
+		if r := e.Value.(*record); r.Key() == key {
+			return r
+		}
+	}
+	return nil
 }
 
 func (index *HashIndex) Set(key string, value []byte) *record {
 	h := hash(key)
-	log.Printf("hash = %d\n", hash)
+	log.Printf("hash for key [%s] = %d\n", key, h)
 	l := index.buckets[h]
+	if l == nil {
+		l = list.New()
+		index.buckets[h] = l
+	}
 	log.Printf("list = %+v\n", l)
 	r := NewRecord(key, value)
 	l.PushFront(r)
