@@ -31,13 +31,13 @@ func (index *HashIndex) Get(key string) *record {
 
 func (index *HashIndex) Set(key string, value []byte) *record {
 	h := hash(key)
-	l := index.buckets[h]
-	if l == nil {
-		l = list.New()
-		index.buckets[h] = l
+	bucket := index.buckets[h]
+	if bucket == nil {
+		bucket = list.New()
+		index.buckets[h] = bucket
 	}
 	r := NewRecord(key, value)
-	l.PushFront(r)
+	bucket.PushFront(r)
 	return  r
 }
 
