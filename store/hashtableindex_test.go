@@ -20,30 +20,26 @@ func TestHash(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-    index  := &HashIndex{}
-    key := "mykey"
-    value := make([]byte, 10)
+	var index, key, value = initData()
+
     if r := index.Set(key, value); r.created == 0 || r.key != key {
     	t.Error("failed!")
     }
 }
 
 func TestGet(t *testing.T) {
-	var (
-		index = &HashIndex{}
-		key = "mykey"
-		value = make([]byte, 10)
-		r = index.Set(key, value)
-	)
+	var index, key, value = initData()
 
-	if r2 := index.Get(key); r2 != r {
+	if r, r2 := index.Set(key, value), index.Get(key); r2 != r {
 		t.Errorf("Expected %s. Found %v\n", r.Key(), r2)
 	}
 }
 
 func TestDeleteExisiting(t *testing.T) {
 	var index, key, value = initData()
+
 	index.Set(key, value)
+	
 	if r, _ := index.Delete(key); r == nil || r.Key() != key {
 		t.Errorf("Error in deleting key [%s]\n", key)
 	}
