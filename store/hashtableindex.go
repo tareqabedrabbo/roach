@@ -32,11 +32,25 @@ func (index *HashIndex) Get(key string) *record {
 func (index *HashIndex) Set(key string, value []byte) *record {
 	h := hash(key)
 	bucket := index.buckets[h]
+
+	// find the bucket
 	if bucket == nil {
 		bucket = list.New()
 		index.buckets[h] = bucket
 	}
-	r := NewRecord(key, value)
+
+	// find the record and update it
+	var r *record
+	if e := findInBucket(bucket, key); e == nil {
+		r = NewRecord(key, value)		
+	} else {
+		r = UpdateRecord(e.Value.(*record), value)
+		
+		// need to guarantee atomicity of update here otherwise the record will disappear before
+		// reappearing updated
+		bucket.Remove(e)
+	}
+	
 	bucket.PushFront(r)
 	return  r
 }
@@ -65,5 +79,14 @@ func hash(key string) uint32 {
 	hash := fnv.New32a()
 	hash.Write([]byte(key))
 	return hash.Sum32() % bucketsSize
+}
+
+func findInBucket(bucket *list.List, key string) *list.Element {
+	for e := bucket.Front(); e != nil; e = e.Next() {
+		if r := e.Value.(*record); r.Key() == key {
+			return e
+		}
+	}
+	return nil
 }
 

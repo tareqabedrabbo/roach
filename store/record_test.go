@@ -41,9 +41,9 @@ func TestUpdateRecord(t *testing.T) {
 		t.Errorf("Expected [%d]. Found [%d]\n", initialLength, l)
 	}
 
-	r.Update(make([]byte, updatedLength))
+	r2 := UpdateRecord(r, make([]byte, updatedLength))
 
-	if l := len(r.Value()); l != updatedLength {
+	if l := len(r2.Value()); l != updatedLength {
 		t.Errorf("Expected [%d]. Found [%d]\n", updatedLength, l)
 	}
 }

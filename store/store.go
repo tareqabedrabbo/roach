@@ -3,14 +3,17 @@ package store
 import (
 	"time"
 	"bytes"
+	"fmt"
 )
 
 type Index interface {
 	Get(key string) *record
+	// creates a new updated record
 	Set(key string, value []byte) *record
 	Delete(key string) (*record, error)
 }
 
+// immutable structure representing a key/value record
 type record struct {
 	created int64
 	updated int64
@@ -25,11 +28,11 @@ func NewRecord(key string, value []byte) *record {
 	return r
 }
 
-func (r *record) Update(newValue []byte) {
+func UpdateRecord(r *record, newValue []byte) *record {
 	now := time.Now().Unix()
-	r.value.Reset()
-	r.value.Write(newValue)
-	r.updated = now
+	newRecord := &record{created: r.created, updated: now, key: r.key}
+	newRecord.value.Write(newValue)
+	return newRecord
 }
 
 func (r *record) Created() int64 {
@@ -46,5 +49,9 @@ func (r *record) Key() string {
 
 func (r *record) Value() []byte {
 	return r.value.Bytes()
+}
+
+func (r *record) String() string {
+	return fmt.Sprintf("{key: %s created: %d, updated: %d, value: <%v bytes>}", r.key, r.created, r.updated, r.value.Len())
 }
 

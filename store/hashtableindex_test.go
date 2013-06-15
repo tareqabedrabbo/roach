@@ -3,6 +3,8 @@ package store
 import(
 	"testing"
 	"log"
+	"time"
+	"fmt"
 )
 
 func TestHash(t *testing.T) {
@@ -27,6 +29,31 @@ func TestSet(t *testing.T) {
     }
 }
 
+func TestSetUpdate(t *testing.T) {
+	var index, key, value = initData()
+	valLen := 20
+	r1 := index.Set(key, value)
+
+	fmt.Printf("before sleep [%+v]\n", r1)
+	time.Sleep(1 * time.Second)
+	
+	r2 := index.Set(key, make([]byte, valLen))
+	fmt.Printf("after sleep [%+v]\n", r2)
+    
+    if c1, c2 := r1.Created(), r2.Created(); c1 != c2 {
+    	t.Errorf("Expected creation time [%d]. Found [%d].\n", c1, c2)
+    }
+
+    if u1, u2 := r1.Updated(), r2.Updated(); u2 <= u1 {
+    	t.Errorf("Expected updated time more recent than [%d]. Found [%d].\n", u1, u2)
+    }
+
+    if newLen := len(r2.Value()); newLen != valLen {
+    	t.Errorf("Expected new value length to be [%d]. Found [%d].", valLen, newLen)
+    }
+
+}
+
 func TestGet(t *testing.T) {
 	var index, key, value = initData()
 
@@ -39,7 +66,7 @@ func TestDeleteExisiting(t *testing.T) {
 	var index, key, value = initData()
 
 	index.Set(key, value)
-	
+
 	if r, _ := index.Delete(key); r == nil || r.Key() != key {
 		t.Errorf("Error in deleting key [%s]\n", key)
 	}
