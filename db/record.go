@@ -21,7 +21,8 @@ func NewRecord(key string, value []byte) *Record {
 	return r
 }
 
-func UpdateRecord(r *Record, newValue []byte) *Record {
+// Creates a new record with a new value while preserving the creation date of the original record
+func NewRecordFrom(r *Record, newValue []byte) *Record {
 	now := time.Now().Unix()
 	newRecord := &Record{created: r.created, updated: now, key: r.key}
 	newRecord.value.Write(newValue)
@@ -44,7 +45,16 @@ func (r *Record) Value() []byte {
 	return r.value.Bytes()
 }
 
+func (r *Record) Update(newValue []byte) {
+	r.value.Reset()
+	r.value.Write(newValue)
+	r.updated = now()
+}
+
 func (r *Record) String() string {
 	return fmt.Sprintf("{key: %s created: %d, updated: %d, value: <%v bytes>}", r.key, r.created, r.updated, r.value.Len())
 }
 
+func now() int64 {
+	return time.Now().Unix()
+}

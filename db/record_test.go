@@ -36,11 +36,26 @@ func TestUpdateRecord(t *testing.T) {
 		r             = NewRecord(key, make([]byte, initialLength))
 	)
 
+	r.Update(make([]byte, updatedLength))
+
+	if l := len(r.Value()); l != updatedLength {
+		t.Errorf("Update failed. Expected length [%d], found [%d]\n", updatedLength, len(r.Value()))
+	}
+}
+
+func TestNewRecordFrom(t *testing.T) {
+	var (
+		key           = "mykey"
+		initialLength = 10
+		updatedLength = 5
+		r             = NewRecord(key, make([]byte, initialLength))
+	)
+
 	if l := len(r.Value()); l != initialLength {
 		t.Errorf("Expected [%d]. Found [%d]\n", initialLength, l)
 	}
 
-	r2 := UpdateRecord(r, make([]byte, updatedLength))
+	r2 := NewRecordFrom(r, make([]byte, updatedLength))
 
 	if l := len(r2.Value()); l != updatedLength {
 		t.Errorf("Expected [%d]. Found [%d]\n", updatedLength, l)
