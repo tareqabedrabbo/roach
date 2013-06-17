@@ -47,3 +47,4 @@ func (r *Record) Value() []byte {
 func (r *Record) String() string {
 	return fmt.Sprintf("{key: %s created: %d, updated: %d, value: <%v bytes>}", r.key, r.created, r.updated, r.value.Len())
 }
+

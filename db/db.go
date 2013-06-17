@@ -1,8 +1,7 @@
 package db
 
 type Db interface {
-	Get(key string) *Record
-	// creates a new updated record
-	Set(key string, value []byte) *Record
+	Get(key string) (*Record, error)
+	Set(key string, value []byte) (*Record, error)
 	Delete(key string) (*Record, error)
 }

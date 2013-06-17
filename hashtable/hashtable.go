@@ -17,27 +17,27 @@ func NewHashtable() *Hashtable {
 	return &Hashtable{}
 }
 
-func (index *Hashtable) Get(key string) *db.Record {
+func (hashtable *Hashtable) Get(key string) (*db.Record, error) {
 	var (
 		h      = hash(key)
-		bucket = index.buckets[h]
+		bucket = hashtable.buckets[h]
 	)
 	for e := bucket.Front(); e != nil; e = e.Next() {
 		if r := e.Value.(*db.Record); r.Key() == key {
-			return r
+			return r, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
-func (index *Hashtable) Set(key string, value []byte) *db.Record {
+func (hashtable *Hashtable) Set(key string, value []byte) (*db.Record, error) {
 	h := hash(key)
-	bucket := index.buckets[h]
+	bucket := hashtable.buckets[h]
 
 	// find the bucket
 	if bucket == nil {
 		bucket = list.New()
-		index.buckets[h] = bucket
+		hashtable.buckets[h] = bucket
 	}
 
 	// find the record and update it
@@ -53,13 +53,13 @@ func (index *Hashtable) Set(key string, value []byte) *db.Record {
 	}
 
 	bucket.PushFront(r)
-	return r
+	return r, nil
 }
 
-func (index *Hashtable) Delete(key string) (*db.Record, error) {
+func (hashtable *Hashtable) Delete(key string) (*db.Record, error) {
 	var (
 		h      = hash(key)
-		bucket = index.buckets[h]
+		bucket = hashtable.buckets[h]
 	)
 
 	if bucket == nil {

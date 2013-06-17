@@ -25,7 +25,7 @@ func TestHash(t *testing.T) {
 func TestSet(t *testing.T) {
 	var db, key, value = initData()
 
-	if r := db.Set(key, value); r.Created() == 0 || r.Key() != key {
+	if r, _ := db.Set(key, value); r.Created() == 0 || r.Key() != key {
 		t.Error("failed!")
 	}
 }
@@ -33,12 +33,12 @@ func TestSet(t *testing.T) {
 func TestSetUpdate(t *testing.T) {
 	var db, key, value = initData()
 	valLen := 20
-	r1 := db.Set(key, value)
+	r1, _ := db.Set(key, value)
 
 	fmt.Printf("before sleep [%+v]\n", r1)
 	time.Sleep(1 * time.Second)
 
-	r2 := db.Set(key, make([]byte, valLen))
+	r2, _ := db.Set(key, make([]byte, valLen))
 	fmt.Printf("after sleep [%+v]\n", r2)
 
 	if c1, c2 := r1.Created(), r2.Created(); c1 != c2 {
@@ -56,19 +56,21 @@ func TestSetUpdate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	var index, key, value = initData()
+	var hashtable, key, value = initData()
 
-	if r, r2 := index.Set(key, value), index.Get(key); r2 != r {
+	r, _ := hashtable.Set(key, value)
+	r2, _ := hashtable.Get(key)
+	if r2 != r {
 		t.Errorf("Expected %s. Found %v\n", r.Key(), r2)
 	}
 }
 
 func TestDeleteExisiting(t *testing.T) {
-	var index, key, value = initData()
+	var hashtable, key, value = initData()
 
-	index.Set(key, value)
+	hashtable.Set(key, value)
 
-	if r, _ := index.Delete(key); r == nil || r.Key() != key {
+	if r, _ := hashtable.Delete(key); r == nil || r.Key() != key {
 		t.Errorf("Error in deleting key [%s]\n", key)
 	}
 }
