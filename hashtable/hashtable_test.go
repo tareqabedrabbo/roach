@@ -1,16 +1,17 @@
-package store
+package hashtable
 
-import(
-	"testing"
-	"log"
-	"time"
+import (
 	"fmt"
+	"log"
+	"roach/db"
+	"testing"
+	"time"
 )
 
 func TestHash(t *testing.T) {
 	var (
 		key = "mykey"
-		h = hash(key)
+		h   = hash(key)
 	)
 
 	log.Printf("hash for key [%s] = %d\n", key, h)
@@ -22,35 +23,35 @@ func TestHash(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-	var index, key, value = initData()
+	var db, key, value = initData()
 
-    if r := index.Set(key, value); r.created == 0 || r.key != key {
-    	t.Error("failed!")
-    }
+	if r := db.Set(key, value); r.Created() == 0 || r.Key() != key {
+		t.Error("failed!")
+	}
 }
 
 func TestSetUpdate(t *testing.T) {
-	var index, key, value = initData()
+	var db, key, value = initData()
 	valLen := 20
-	r1 := index.Set(key, value)
+	r1 := db.Set(key, value)
 
 	fmt.Printf("before sleep [%+v]\n", r1)
 	time.Sleep(1 * time.Second)
-	
-	r2 := index.Set(key, make([]byte, valLen))
+
+	r2 := db.Set(key, make([]byte, valLen))
 	fmt.Printf("after sleep [%+v]\n", r2)
-    
-    if c1, c2 := r1.Created(), r2.Created(); c1 != c2 {
-    	t.Errorf("Expected creation time [%d]. Found [%d].\n", c1, c2)
-    }
 
-    if u1, u2 := r1.Updated(), r2.Updated(); u2 <= u1 {
-    	t.Errorf("Expected updated time more recent than [%d]. Found [%d].\n", u1, u2)
-    }
+	if c1, c2 := r1.Created(), r2.Created(); c1 != c2 {
+		t.Errorf("Expected creation time [%d]. Found [%d].\n", c1, c2)
+	}
 
-    if newLen := len(r2.Value()); newLen != valLen {
-    	t.Errorf("Expected new value length to be [%d]. Found [%d].", valLen, newLen)
-    }
+	if u1, u2 := r1.Updated(), r2.Updated(); u2 <= u1 {
+		t.Errorf("Expected updated time more recent than [%d]. Found [%d].\n", u1, u2)
+	}
+
+	if newLen := len(r2.Value()); newLen != valLen {
+		t.Errorf("Expected new value length to be [%d]. Found [%d].", valLen, newLen)
+	}
 
 }
 
@@ -72,6 +73,6 @@ func TestDeleteExisiting(t *testing.T) {
 	}
 }
 
-func initData() (index Index, key string, value []byte) {
-	return &HashIndex{}, "mykey", make([]byte, 10)
+func initData() (db db.Db, key string, value []byte) {
+	return &Hashtable{}, "mykey", make([]byte, 10)
 }

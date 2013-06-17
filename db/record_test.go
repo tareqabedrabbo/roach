@@ -1,18 +1,17 @@
-package store
+package db
 
-import(
-	"testing"
-	"log"
+import (
 	"bytes"
+	"log"
+	"testing"
 )
 
 func TestCreateRecord(t *testing.T) {
-	var (	
-			key = "mykey"
-			value = make([]byte, 10)
-			r = NewRecord(key, value)
-
-		)
+	var (
+		key   = "mykey"
+		value = make([]byte, 10)
+		r     = NewRecord(key, value)
+	)
 
 	log.Printf("created record %+v\n", r)
 
@@ -31,11 +30,11 @@ func TestCreateRecord(t *testing.T) {
 
 func TestUpdateRecord(t *testing.T) {
 	var (
-			key = "mykey"
-			initialLength = 10
-			updatedLength = 5
-			r = NewRecord(key, make([]byte, initialLength))
-		)
+		key           = "mykey"
+		initialLength = 10
+		updatedLength = 5
+		r             = NewRecord(key, make([]byte, initialLength))
+	)
 
 	if l := len(r.Value()); l != initialLength {
 		t.Errorf("Expected [%d]. Found [%d]\n", initialLength, l)

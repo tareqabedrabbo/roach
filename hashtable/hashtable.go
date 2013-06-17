@@ -1,35 +1,36 @@
-package store
+package hashtable
 
-import(
-	"hash/fnv"
+import (
 	"container/list"
 	"fmt"
+	"hash/fnv"
+	"roach/db"
 )
 
 const bucketsSize uint32 = 100000
 
-type HashIndex struct {
+type Hashtable struct {
 	buckets [bucketsSize]*list.List
 }
 
-func NewHashIndex() *HashIndex {
-	return &HashIndex{}
+func NewHashtable() *Hashtable {
+	return &Hashtable{}
 }
 
-func (index *HashIndex) Get(key string) *record {
+func (index *Hashtable) Get(key string) *db.Record {
 	var (
-		h = hash(key)
+		h      = hash(key)
 		bucket = index.buckets[h]
 	)
 	for e := bucket.Front(); e != nil; e = e.Next() {
-		if r := e.Value.(*record); r.Key() == key {
+		if r := e.Value.(*db.Record); r.Key() == key {
 			return r
 		}
 	}
 	return nil
 }
 
-func (index *HashIndex) Set(key string, value []byte) *record {
+func (index *Hashtable) Set(key string, value []byte) *db.Record {
 	h := hash(key)
 	bucket := index.buckets[h]
 
@@ -40,39 +41,39 @@ func (index *HashIndex) Set(key string, value []byte) *record {
 	}
 
 	// find the record and update it
-	var r *record
+	var r *db.Record
 	if e := findInBucket(bucket, key); e == nil {
-		r = NewRecord(key, value)		
+		r = db.NewRecord(key, value)
 	} else {
-		r = UpdateRecord(e.Value.(*record), value)
-		
+		r = db.UpdateRecord(e.Value.(*db.Record), value)
+
 		// need to guarantee atomicity of update here otherwise the record will disappear before
 		// reappearing updated
 		bucket.Remove(e)
 	}
-	
+
 	bucket.PushFront(r)
-	return  r
+	return r
 }
 
-func (index *HashIndex) Delete(key string) (*record, error) {
+func (index *Hashtable) Delete(key string) (*db.Record, error) {
 	var (
-		h = hash(key)
+		h      = hash(key)
 		bucket = index.buckets[h]
 	)
-	
+
 	if bucket == nil {
 		return nil, fmt.Errorf("key [%s] does not exist", key)
 	}
 
 	e := bucket.Front()
 	for ; e != nil; e = e.Next() {
-		if r := e.Value.(*record); r.Key() == key {
-			return bucket.Remove(e).(*record), nil
+		if r := e.Value.(*db.Record); r.Key() == key {
+			return bucket.Remove(e).(*db.Record), nil
 		}
 	}
 
-	return nil, fmt.Errorf("key [%s] does not exist", key)		
+	return nil, fmt.Errorf("key [%s] does not exist", key)
 }
 
 func hash(key string) uint32 {
@@ -83,10 +84,9 @@ func hash(key string) uint32 {
 
 func findInBucket(bucket *list.List, key string) *list.Element {
 	for e := bucket.Front(); e != nil; e = e.Next() {
-		if r := e.Value.(*record); r.Key() == key {
+		if r := e.Value.(*db.Record); r.Key() == key {
 			return e
 		}
 	}
 	return nil
 }
-
