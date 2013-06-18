@@ -34,18 +34,20 @@ func TestSetUpdate(t *testing.T) {
 	var db, key, value = initData()
 	valLen := 20
 	r1, _ := db.Set(key, value)
+	c1, u1 := r1.Created(), r1.Updated()
 
 	fmt.Printf("before sleep [%+v]\n", r1)
 	time.Sleep(1 * time.Second)
 
 	r2, _ := db.Set(key, make([]byte, valLen))
+
 	fmt.Printf("after sleep [%+v]\n", r2)
 
-	if c1, c2 := r1.Created(), r2.Created(); c1 != c2 {
+	if c2 := r2.Created(); c1 != c2 {
 		t.Errorf("Expected creation time [%d]. Found [%d].\n", c1, c2)
 	}
 
-	if u1, u2 := r1.Updated(), r2.Updated(); u2 <= u1 {
+	if u2 := r1.Updated(); u2 <= u1 {
 		t.Errorf("Expected updated time more recent than [%d]. Found [%d].\n", u1, u2)
 	}
 

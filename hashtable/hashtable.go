@@ -5,16 +5,22 @@ import (
 	"fmt"
 	"hash/fnv"
 	"roach/db"
+	"sync"
 )
 
 const bucketsSize uint32 = 100000
 
-type Hashtable struct {
-	buckets [bucketsSize]*list.List
+type bucket struct {
+	sync.RWMutex
+	*list.List
 }
 
-func NewHashtable() *Hashtable {
-	return &Hashtable{}
+func newBucket() *bucket {
+	return &bucket{List: list.New()}
+}
+
+type Hashtable struct {
+	buckets [bucketsSize]*bucket
 }
 
 func (hashtable *Hashtable) Get(key string) (*db.Record, error) {
@@ -22,6 +28,10 @@ func (hashtable *Hashtable) Get(key string) (*db.Record, error) {
 		h      = hash(key)
 		bucket = hashtable.buckets[h]
 	)
+
+	bucket.RLock()
+	defer bucket.RUnlock()
+
 	for e := bucket.Front(); e != nil; e = e.Next() {
 		if r := e.Value.(*db.Record); r.Key() == key {
 			return r, nil
@@ -36,23 +46,23 @@ func (hashtable *Hashtable) Set(key string, value []byte) (*db.Record, error) {
 
 	// find the bucket
 	if bucket == nil {
-		bucket = list.New()
+		bucket = newBucket()
+		// does this require locking the hashtable?
 		hashtable.buckets[h] = bucket
 	}
+
+	bucket.Lock()
+	defer bucket.Unlock()
 
 	// find the record and update it
 	var r *db.Record
 	if e := findInBucket(bucket, key); e == nil {
 		r = db.NewRecord(key, value)
+		bucket.PushFront(r)
 	} else {
-		r = db.UpdateRecord(e.Value.(*db.Record), value)
-
-		// need to guarantee atomicity of update here otherwise the record will disappear before
-		// reappearing updated
-		bucket.Remove(e)
+		r = e.Value.(*db.Record)
+		r.Update(value)
 	}
-
-	bucket.PushFront(r)
 	return r, nil
 }
 
@@ -65,6 +75,9 @@ func (hashtable *Hashtable) Delete(key string) (*db.Record, error) {
 	if bucket == nil {
 		return nil, fmt.Errorf("key [%s] does not exist", key)
 	}
+
+	bucket.Lock()
+	defer bucket.Unlock()
 
 	e := bucket.Front()
 	for ; e != nil; e = e.Next() {
@@ -82,7 +95,7 @@ func hash(key string) uint32 {
 	return hash.Sum32() % bucketsSize
 }
 
-func findInBucket(bucket *list.List, key string) *list.Element {
+func findInBucket(bucket *bucket, key string) *list.Element {
 	for e := bucket.Front(); e != nil; e = e.Next() {
 		if r := e.Value.(*db.Record); r.Key() == key {
 			return e
