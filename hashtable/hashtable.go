@@ -15,10 +15,6 @@ type bucket struct {
 	*list.List
 }
 
-func newBucket() *bucket {
-	return &bucket{List: list.New()}
-}
-
 type Hashtable struct {
 	buckets [bucketsSize]*bucket
 }
@@ -102,4 +98,12 @@ func findInBucket(bucket *bucket, key string) *list.Element {
 		}
 	}
 	return nil
+}
+
+func newBucket() *bucket {
+	return &bucket{List: list.New()}
+}
+
+func (hashtable *Hashtable) String() string {
+	return fmt.Sprintf("{<%d>}", len(hashtable.buckets))
 }
